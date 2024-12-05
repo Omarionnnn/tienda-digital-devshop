@@ -44,9 +44,9 @@ function Header() {
           <li>
             <Link to="/comunidad">Comunidad</Link>
           </li>
-          <li>
+          {user === null && <li>
             <Link to="/login">Login</Link>
-          </li>
+          </li>}
           <li>
           <button className="cerrar-sesion" onClick={handleLogout}>Cerrar sesión</button>
           </li>

@@ -86,6 +86,40 @@ app.post('/login', (req, res) => {
     });
 });
 
+    // para guardar los comentarios
+    app.post('/comentarios', (req, res) => {
+        console.log('Solicitud POST a /comentarios recibida');
+        const { usuario, mensaje } = req.body;
+      
+        if (!usuario || !mensaje) {
+          return res.status(400).json({ message: 'El usuario y el mensaje son requeridos.' });
+        }
+      
+        const query = "INSERT INTO comentarios (usuario, mensaje) VALUES (?, ?)";
+        db.query(query, [usuario, mensaje], (err, result) => {
+          if (err) {
+            console.error('Error al insertar el comentario en la base de datos:', err);
+            return res.status(500).json({ message: 'Error al guardar el comentario.' });
+          }
+          res.status(201).json({ message: 'Comentario guardado correctamente.' });
+        });
+      });
+      
+
+        // para obtener los comentarios
+        app.get('/comentarios', (req, res) => {
+            const query = 'SELECT * FROM comentarios ORDER BY fecha DESC';
+          
+            db.query(query, (err, result) => {
+              if (err) {
+                console.error('Error al obtener los comentarios:', err);
+                return res.status(500).json({ message: 'Error al obtener los comentarios.' });
+              }
+              res.status(200).json(result); 
+            });
+          });
+
+
     app.listen(port, () => {
       console.log(`Servidor corriendo en el puerto ${port}`);
     });
