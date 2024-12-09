@@ -23,6 +23,8 @@
   display: flex;
   margin: 0;
   padding: 0;
+  justify-content: center;
+  align-items: center;
 }
 
 .nav-links li {
@@ -39,6 +41,32 @@
 }
 
 .nav-links a:hover {
+  color: #43cea2;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+}
+
+.main-header span {
+  color: #9effe0;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 300;
+  padding: 0 20px;
+}
+
+.cerrar-sesion {
+  border: none;
+  background-color: transparent;
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: bold;
+  padding: 5px 10px;
+  transition: color 0.3s, background-color 0.3s;
+  cursor: pointer;
+}
+
+.cerrar-sesion:hover {
   color: #43cea2;
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 5px;

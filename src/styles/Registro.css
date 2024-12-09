@@ -65,3 +65,20 @@
   margin-top: 20px;
   color: #f2fcfe;
 }
+
+
+/* Para el icono de confirmar contraseña*/
+/* para las notas del formulario*/
+/* Registro.css */
+/* Registro.css */
+.valid {
+  color: green;
+}
+
+.invalid {
+  color: red;
+}
+
+.hide {
+  display: none;
+}
