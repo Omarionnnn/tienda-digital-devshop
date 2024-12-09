@@ -7,6 +7,9 @@ import Cursos from "./pages/Cursos";
 import Comunidad from "./pages/Comunidad";
 import Login from "./pages/Login";
 import Registro from "./pages/Registro";
+import MisCursos from "./pages/MisCursos";
+import Success from "./pages/Success";
+import Cancel from "./pages/Cancel";
 
 function App() {
   return (
@@ -20,6 +23,9 @@ function App() {
             <Route path="/comunidad" element={<Comunidad />} />
             <Route path="/login" element={<Login />} />
             <Route path="/registro" element={<Registro />} />
+            <Route path="/mis-cursos" element={<MisCursos />} />
+            <Route path="/success" element={<Success />} />
+            <Route path="/cancel" element={<Cancel />} />
           </Routes>
         </main>
         <Footer />

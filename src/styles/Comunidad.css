@@ -4,7 +4,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 120px);
+    min-height: calc(100vh - 105px);
     width: 100%;
     background: linear-gradient(120deg, #1c92d2, #f2fcfe);
     padding: 20px;
