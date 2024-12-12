@@ -10,6 +10,9 @@ import Registro from "./pages/Registro";
 import MisCursos from "./pages/MisCursos";
 import Success from "./pages/Success";
 import Cancel from "./pages/Cancel";
+import CursoReact from "./pages/cursos/CursoReact";
+import CursoJava from "./pages/cursos/CursoJava";
+import CursoDiseño from "./pages/cursos/CursoDiseño";
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
             <Route path="/mis-cursos" element={<MisCursos />} />
             <Route path="/success" element={<Success />} />
             <Route path="/cancel" element={<Cancel />} />
+            <Route path="/cursoReact" element={<CursoReact />} />
+            <Route path="/cursoJava" element={<CursoJava />} />
+            <Route path="/cursoDiseño" element={<CursoDiseño />} />
           </Routes>
         </main>
         <Footer />

@@ -56,9 +56,10 @@
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8); /* Más sombra para resaltar */
   }
   
-  .curso-card button {
-    background-color: #007bff; /* Azul vibrante */
-    color: #ffffff; /* Blanco puro */
+    
+  .mis-cursos-grid button {
+    background-color: #ffffff; 
+    color: #185a9d; 
     border: none;
     border-radius: 25px; /* Bordes redondeados */
     padding: 12px 25px; /* Botón más grande */
@@ -68,14 +69,25 @@
     transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
   }
   
-  .curso-card button:hover {
-    background-color: #0056b3; /* Azul más oscuro */
+  .mis-cursos-grid button:hover {
+    background-color: #e6eaee; /* Azul más oscuro */
     transform: translateY(-3px); /* Elevar botón */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Brillo en hover */
   }
   
-  .curso-card:hover {
+  .mis-cursos-grid buttonhover {
     transform: scale(1.08); /* Agrandar tarjeta */
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4); /* Sombra más pronunciada */
   }
   
+  .mis-cursos-grid button {
+    background-color: #ffffff; 
+    color: #185a9d; 
+    border: none;
+    border-radius: 25px; /* Bordes redondeados */
+    padding: 12px 25px; /* Botón más grande */
+    font-size: 1.1rem; /* Texto más grande */
+    cursor: pointer;
+    margin-top: auto;
+    transition: background-color 0.3s, transform 0.3s, box-shadow 0.3s;
+  }

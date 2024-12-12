@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "../styles/MisCursos.css";
 import cursos from "../data/cursos";
+import { useNavigate } from "react-router-dom";
 
 function MisCursos() {
   const [cursosComprados, setCursosComprados] = useState([]);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     //Simulación
@@ -11,6 +14,22 @@ function MisCursos() {
     const cursosFiltrados = cursos.filter((curso) => idsComprados.includes(curso.id));
     setCursosComprados(cursosFiltrados);
   }, []);
+
+  function accederCurso(cursoId) {
+    const rutas = {
+      1: "/cursoReact",
+      2: "/cursoJava",
+      3: "/cursoDiseño"
+    };
+
+
+    const ruta = rutas[cursoId];
+    if (ruta) {
+      navigate(ruta);
+    } else {
+      console.log("Curso no encontrado");
+    }
+  }
 
   return (
     <div className="mis-cursos-container">
@@ -30,10 +49,6 @@ function MisCursos() {
       </div>
     </div>
   );
-
-  function accederCurso(cursoId) {
-    alert(`Accediendo al contenido del curso con ID: ${cursoId}`);
-  }
 }
 
 export default MisCursos;

@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Comunidad.css";
-import axios from "axios";
 
 function Comunidad() {
 
   const [comentario, setComentario] = useState('');
   const [comentarios, setComentarios] = useState([]);
+  const [respuesta, setRespuesta] = useState(''); 
+  const [comentarioId, setComentarioId] = useState(null);
 
   const user = JSON.parse(localStorage.getItem('user')); 
   const usuarioNombre = user ? user.name : "Anonimo"; 
   
   //para obtener los comentarios
   useEffect(() => {
-    const fetchComentarios = async () => {
-      try {
-        const response = await axios.get('http://localhost:5000/comentarios');
-        setComentarios(response.data);  
-      } catch (error) {
-        console.error("Error al obtener los comentarios: ", error);
-        alert('Hubo un error al obtener los comentarios');
-      }
-    };
-
-    fetchComentarios();
+    const storedComentarios = JSON.parse(localStorage.getItem('comentarios')) || [];
+    setComentarios(storedComentarios);
   }, []);
+
+  const saveComentariosToLocalStorage = (comentarios) => {
+    localStorage.setItem('comentarios', JSON.stringify(comentarios));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
@@ -33,37 +29,88 @@ function Comunidad() {
     }
 
     const nuevoComentario = {
+      id: Date.now(),
       usuario: usuarioNombre,
       mensaje: comentario,
+      respuestas: [] 
     };
 
-    try {
-      await axios.post('http://localhost:5000/comentarios', nuevoComentario);
-      setComentarios([...comentarios, nuevoComentario]); 
-      setComentario('');
+    const updatedComentarios = [...comentarios, nuevoComentario];
+    setComentarios(updatedComentarios);
+    saveComentariosToLocalStorage(updatedComentarios); // Guardamos en localStorage
+    setComentario('');
+  };
 
-    } catch (error){
-      console.error("Error al publicar el comentario: ", error);
-      alert('Hubo un error al publicar tu comentario');
+   //Para manejar las respuestas
+  const handleRespuestaSubmit = async (e) => {
+    e.preventDefault();
+    if (!respuesta) {
+      alert('La respuesta no puede estar vacía');
+      return;
     }
+
+    const nuevoComentario = {
+      usuario: usuarioNombre,
+      mensaje: respuesta,
+    };
+
+    const updatedComentarios = comentarios.map(comentario =>
+      comentario.id === comentarioId
+        ? {...comentario, respuestas: [...comentario.respuestas, nuevoComentario]}
+        : comentario
+    );
+
+    setComentarios(updatedComentarios);
+    saveComentariosToLocalStorage(updatedComentarios); // Guardamos en localStorage
+    setRespuesta('');
+    setComentarioId(null);
   };
 
   return (
     <div className="comunidad-container">
       <h1>Únete a nuestra Comunidad</h1>
       <p>Comparte tus ideas, resuelve dudas y crece junto a otros estudiantes.</p>
+      
+      {/* Formulario para publicar un comentario */}
       <form onSubmit={handleSubmit}>
         <textarea 
           value={comentario}
           onChange={(e) => setComentario(e.target.value)}
-          placeholder="Escribe tu pregunta o comentario aquí">
+          placeholder="Escribe tu comentario aquí">
         </textarea>
-        <button type="submit">Publicar</button>
+        <button type="submit">Publicar Comentario</button>
       </form>
+
+      {/* Mostrar los comentarios y respuestas */}
       <ul className="comentarios">
         {comentarios.map((comentario) => (
-          <li key={comentario.id}>
+          <li key={comentario.id} className="comentario">
             <strong>{comentario.usuario}:</strong> {comentario.mensaje}
+
+            {/* Mostrar respuestas si existen */}
+            <ul className="respuestas">
+              {comentario.respuestas.map((respuesta, index) => (
+                <li key={index} className="respuesta">
+                  <strong>{respuesta.usuario}:</strong> {respuesta.mensaje}
+                </li>
+              ))}
+            </ul>
+
+            {/* Formulario para responder a un comentario */}
+            <button onClick={() => setComentarioId(comentario.id)}>
+              Responder
+            </button>
+
+            {comentarioId === comentario.id && (
+              <form onSubmit={handleRespuestaSubmit}>
+                <textarea
+                  value={respuesta}
+                  onChange={(e) => setRespuesta(e.target.value)}
+                  placeholder="Escribe tu respuesta aquí">
+                </textarea>
+                <button type="submit">Publicar Respuesta</button>
+              </form>
+            )}
           </li>
         ))}
       </ul>
