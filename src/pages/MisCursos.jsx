@@ -1,27 +1,46 @@
 import React, { useEffect, useState } from "react";
+import { supabase } from "../../supabaseClient.js";
 import "../styles/MisCursos.css";
-import cursos from "../data/cursos";
 
 function MisCursos() {
   const [cursosComprados, setCursosComprados] = useState([]);
 
   useEffect(() => {
-    //Simulación
-    const idsComprados = JSON.parse(localStorage.getItem("cursosComprados")) || [];
-    const cursosFiltrados = cursos.filter((curso) => idsComprados.includes(curso.id));
-    setCursosComprados(cursosFiltrados);
-  }, []);
+    const fetchCursos = async () => {
+      const { data: user, error: userError } = await supabase.auth.getUser();
+      if (userError) {
+        console.error("Error al obtener el usuario:", userError);
+        return;
+      }
+      if (!user) {
+        console.error("No se encontró un usuario autenticado");
+        return;
+      }
+  
+      const { data, error } = await supabase
+        .from("compras")
+        .select("curso_id, cursos(id, título, descripción)")
+        .eq("usuario_id", user.id);
+  
+      if (error) {
+        console.error("Error al cargar los cursos comprados:", error);
+      } else {
+        setCursosComprados(data || []);
+      }
+    };
+  
+    fetchCursos();
+  }, []);  
 
   return (
     <div className="mis-cursos-container">
       <h1>Mis Cursos</h1>
       <div className="mis-cursos-grid">
         {cursosComprados.length > 0 ? (
-          cursosComprados.map((curso) => (
-            <div key={curso.id} className="mis-cursos-card">
-              <h2>{curso.titulo}</h2>
-              <p>{curso.descripcion}</p>
-              <button onClick={() => accederCurso(curso.id)}>Acceder</button>
+          cursosComprados.map(({ curso_id, cursos }) => (
+            <div key={curso_id} className="mis-cursos-card">
+              <h2>{cursos.titulo}</h2>
+              <p>{cursos.descripcion}</p>
             </div>
           ))
         ) : (
@@ -30,10 +49,6 @@ function MisCursos() {
       </div>
     </div>
   );
-
-  function accederCurso(cursoId) {
-    alert(`Accediendo al contenido del curso con ID: ${cursoId}`);
-  }
 }
 
 export default MisCursos;
