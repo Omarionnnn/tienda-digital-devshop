@@ -56,6 +56,7 @@ function App() {
       if (error) {
         console.error("Error al obtener la sesión del usuario:", error.message);
       } else {
+        console.log("Sesión obtenida:", session);
         setUser(session?.user || null);
         await syncUserToDatabase(session?.user);
       }
@@ -75,6 +76,7 @@ function App() {
     checkSession();
     
     const { data: subscription } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log("Cambio en el estado de autenticación:", session);
       setUser(session?.user || null);
       await syncUserToDatabase(session?.user);
     });

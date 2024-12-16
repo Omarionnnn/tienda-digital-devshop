@@ -12,7 +12,7 @@ function MisCursos() {
         console.error("Error al obtener el usuario:", userError);
         return;
       }
-      if (!user) {
+      if (!user || !user.id) {
         console.error("No se encontró un usuario autenticado");
         return;
       }
@@ -30,7 +30,7 @@ function MisCursos() {
     };
   
     fetchCursos();
-  }, []);  
+  }, []);    
 
   return (
     <div className="mis-cursos-container">

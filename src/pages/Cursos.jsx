@@ -6,37 +6,43 @@ import PropTypes from "prop-types";
 const CheckoutButton = ({ items, cursoId }) => {
   const handleCheckout = async () => {
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user) {
-        console.error("Usuario no autenticado");
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) {
+        console.error("Error al obtener el usuario o usuario no autenticado:", error);
         return;
       }
 
-      // Datos enviados al servidor
+      const { data: session } = await supabase.auth.getSession();
+      const token = session?.session?.access_token;
+
+      if (!token) {
+        console.error("Error: No se pudo obtener el token de sesión.");
+        return;
+      }
+
       const bodyData = {
         items,
-        userId: session.user.id,
+        userId: user.id,
         cursoId: String(cursoId),
       };
 
-      console.log("Datos enviados al servidor:", bodyData);
+      console.log("Datos enviados al servidor desde cliente:", bodyData);
 
-      // Realizar la solicitud al servidor
       const response = await fetch("http://localhost:3001/create-checkout-session", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(bodyData), // Corrección aquí
+        body: JSON.stringify(bodyData),
       });
 
       if (!response.ok) {
         throw new Error("Error en la solicitud de checkout.");
       }
 
-      // Obtener la sesión de Stripe y redirigir
-      const session = await response.json();
-      window.location.href = session.url;
+      const stripeSession = await response.json();
+      window.location.href = stripeSession.url;
     } catch (error) {
       console.error("Error al procesar el checkout:", error);
     }
