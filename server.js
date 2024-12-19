@@ -1,7 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import bodyParser from "body-parser";
 import Stripe from "stripe";
 import { createClient } from "@supabase/supabase-js";
 
@@ -11,11 +10,6 @@ const app = express();
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-// Middlewares
-app.use(cors({ origin: "http://localhost:5173" }));
-app.use(bodyParser.json());
-app.use(bodyParser.raw({ type: "application/json" })); // Necesario para webhook
-
 // Middleware para verificar autenticación
 const verifyAuth = async (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -24,19 +18,32 @@ const verifyAuth = async (req, res, next) => {
     return res.status(401).json({ error: "Token no proporcionado" });
   }
 
-  const { data: user, error } = await supabase.auth.getUser(token);
+  const { data: {user}, error } = await supabase.auth.getUser(token);
   if (error || !user) {
     console.error("Error al verificar autenticación:", error);
     return res.status(401).json({ error: "Autenticación fallida" });
   }
 
   req.user = user;
-  console.log("Usuario autenticado:", user);
+  console.log("Usuario autenticado:", req.user);
   next();
 };
 
+// Middlewares globales
+app.use(cors({ origin: "http://localhost:5173" }));
+
+// Excluir `/webhook` del middleware `express.json()`
+app.use((req, res, next) => {
+  if (req.originalUrl === "/webhook") {
+    next(); // No procesar el cuerpo aquí
+  } else {
+    express.json()(req, res, next);
+  }
+});
+
 // Crear sesión de Stripe
 app.post("/create-checkout-session", verifyAuth, async (req, res) => {
+  console.log("req.user:", req.user);
   try {
     const { cursoId, items } = req.body;
 
@@ -59,7 +66,7 @@ app.post("/create-checkout-session", verifyAuth, async (req, res) => {
       success_url: "http://localhost:5173/success",
       cancel_url: "http://localhost:5173/cancel",
       metadata: {
-        userId: req.user.id, // Enviar userId como metadata
+        userId: req.user.id,
         cursoId,
       },
     });
@@ -72,43 +79,41 @@ app.post("/create-checkout-session", verifyAuth, async (req, res) => {
   }
 });
 
-// Manejar Webhook de Stripe
-app.post("/webhook", async (req, res) => {
+// Webhook de Stripe
+app.post("/webhook", express.raw({ type: "application/json" }), async (req, res) => {
   const sig = req.headers["stripe-signature"];
   let event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      req.body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET
-    );
+    event = stripe.webhooks.constructEvent(req.body, sig, process.env.STRIPE_WEBHOOK_SECRET);
+    console.log("Webhook recibido:", event.type);
   } catch (err) {
-    console.error("Webhook signature failed:", err.message);
+    console.error("Error en la firma del webhook:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object;
-
     const userId = session.metadata.userId;
     const cursoId = session.metadata.cursoId;
 
-    console.log("Pago completado. Insertando en Supabase:", { userId, cursoId });
+    console.log("Insertando en Supabase:", { userId, cursoId });
 
-    const { error: insertError } = await supabase.from("compras").insert({
+    const { error } = await supabase.from("compras").insert({
       usuario_id: userId,
       curso_id: cursoId,
       fecha: new Date().toISOString(),
     });
 
-    if (insertError) {
-      console.error("Error al insertar en compras:", insertError.message);
+    if (error) {
+      console.error("Error al insertar en Supabase:", error.message);
       return res.status(500).send("Error al insertar en la base de datos.");
     }
+
+    console.log("Inserción exitosa en Supabase.");
   }
 
-  res.status(200).send("Webhook recibido con éxito.");
+  res.status(200).send("Webhook procesado con éxito.");
 });
 
 // Iniciar el servidor

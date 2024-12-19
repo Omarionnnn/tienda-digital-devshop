@@ -4,33 +4,59 @@ import "../styles/MisCursos.css";
 
 function MisCursos() {
   const [cursosComprados, setCursosComprados] = useState([]);
+  const [loading, setLoading] = useState(true); // Estado de carga
 
   useEffect(() => {
     const fetchCursos = async () => {
-      const { data: user, error: userError } = await supabase.auth.getUser();
-      if (userError) {
-        console.error("Error al obtener el usuario:", userError);
-        return;
-      }
-      if (!user || !user.id) {
-        console.error("No se encontró un usuario autenticado");
-        return;
-      }
-  
-      const { data, error } = await supabase
-        .from("compras")
-        .select("curso_id, cursos(id, título, descripción)")
-        .eq("usuario_id", user.id);
-  
-      if (error) {
-        console.error("Error al cargar los cursos comprados:", error);
-      } else {
-        setCursosComprados(data || []);
+      console.log("Iniciando fetch de cursos...");
+      try {
+        // Obtener la sesión actual del usuario
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Error al obtener la sesión:", sessionError.message);
+          setLoading(false);
+          return;
+        }
+
+        if (!session || !session.user) {
+          console.error("No se encontró una sesión activa ni un usuario autenticado.");
+          setLoading(false);
+          return;
+        }
+
+        const user = session.user;
+        console.log("Usuario autenticado:", user); // Depuración
+
+        // Consulta a la base de datos para obtener los cursos comprados
+        const { data, error } = await supabase
+          .from("compras")
+          .select(`
+            curso_id,
+            cursos (id, título, descripción)
+          `)
+          .eq("usuario_id", user.id);
+
+        if (error) {
+          console.error("Error al cargar los cursos comprados:", error.message);
+        } else {
+          console.log("Cursos obtenidos:", data); // Depuración
+          setCursosComprados(data || []);
+        }
+      } catch (error) {
+        console.error("Error inesperado al obtener los cursos:", error.message);
+      } finally {
+        setLoading(false); // Finaliza el estado de carga
       }
     };
-  
+
     fetchCursos();
-  }, []);    
+  }, []);
+
+  if (loading) {
+    console.log("Cargando cursos...");
+    return <p>Cargando...</p>; // Muestra un indicador de carga
+  }
 
   return (
     <div className="mis-cursos-container">
@@ -39,8 +65,8 @@ function MisCursos() {
         {cursosComprados.length > 0 ? (
           cursosComprados.map(({ curso_id, cursos }) => (
             <div key={curso_id} className="mis-cursos-card">
-              <h2>{cursos.titulo}</h2>
-              <p>{cursos.descripcion}</p>
+              <h2>{cursos.título}</h2>
+              <p>{cursos.descripción}</p>
             </div>
           ))
         ) : (
